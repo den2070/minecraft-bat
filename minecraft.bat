@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title PILOT LAUNCHER v3.6 [AUTO-UPDATE]
+title PILOT LAUNCHER v3.6 [STABLE]
 color 0B
 
 :: --- НАСТРОЙКИ ОБНОВЛЕНИЯ ---
@@ -8,26 +8,31 @@ set "REPO_URL=https://raw.githubusercontent.com/den2070/minecraft-bat/main/minec
 set "LOCAL_BAT=%~nx0"
 set "TEMP_BAT=new_version.tmp"
 
-echo [*] Проверка обновлений...
+echo [*] Проверка обновлений на GitHub...
 powershell -Command "$web = (New-Object System.Net.WebClient).DownloadString('%REPO_URL%'); $local = Get-Content '%LOCAL_BAT%' -Raw; if ($web.Trim() -ne $local.Trim()) { exit 1 } else { exit 0 }"
 
 if %errorlevel% neq 0 (
     echo [!] НАЙДЕНО ОБНОВЛЕНИЕ!
     powershell -Command "(New-Object System.Net.WebClient).DownloadFile('%REPO_URL%', '%TEMP_BAT%')"
-    ren "%LOCAL_BAT%" "old_version.bak"
-    move /y "%TEMP_BAT%" "%LOCAL_BAT%"
+    
+    :: Удаляем старые хвосты
     if exist launcher_*.py del /f /q launcher_*.py
+    
+    :: Обновляем сам батник
+    copy /y "%TEMP_BAT%" "%LOCAL_BAT%" >nul
+    del /f /q "%TEMP_BAT%"
+    
     cls
     echo ==========================================
-    echo    УЛУЧШЕНО! Файлы обновлены.
+    echo    УЛУЧШЕНО! Версия v3.6 установлена.
     echo ==========================================
     echo [!] ЗАПУСТИ БАТНИК СНОВА!
     pause
     exit
 )
 
-:: --- СОЗДАНИЕ PYTHON ФАЙЛА ЧЕРЕЗ POWERSHELL (ЧТОБЫ НЕ БЫЛО ОШИБОК) ---
-echo [*] Запуск систем...
+:: --- ГЕНЕРАЦИЯ PYTHON КОДА (БЕЗ ОШИБОК КАВЫЧЕК) ---
+echo [*] Синхронизация систем...
 powershell -Command ^
 "$code = @'# -*- coding: utf-8 -*- `n" ^
 "import os, sys, subprocess, uuid, json, shutil `n" ^
@@ -53,7 +58,7 @@ powershell -Command ^
 "def get_inst(): return [d for d in os.listdir(INSTANCES) if os.path.isdir(os.path.join(INSTANCES, d))] if os.path.exists(INSTANCES) else [] `n" ^
 "def start_game(tid, gdir): `n" ^
 "    c = load_cfg() `n" ^
-"    opt = {'username': c['nick'], 'uuid': str(uuid.uuid4()), 'token': '0', 'jvmArguments': [f'-Xmx{c['ram']}G'], 'gameDirectory': gdir} `n" ^
+"    opt = {'username': c['nick'], 'uuid': str(uuid.uuid4()), 'token': '0', 'jvmArguments': [f'-Xmx{c[\"ram\"]}G'], 'gameDirectory': gdir} `n" ^
 "    try: `n" ^
 "        minecraft_launcher_lib.install.install_minecraft_version(tid, GAME_DIR, callback=callback) `n" ^
 "        cmd = minecraft_launcher_lib.command.get_minecraft_command(tid, GAME_DIR, opt) `n" ^
@@ -62,7 +67,7 @@ powershell -Command ^
 "def main(): `n" ^
 "    while True: `n" ^
 "        c = load_cfg(); os.system('cls'); print('==========================================') `n" ^
-"        print(f'   PILOT v3.6 | NICK: {c['nick']} | RAM: {c['ram']}G') `n" ^
+"        print(f'   PILOT v3.6 | NICK: {c[\"nick\"]} | RAM: {c[\"ram\"]}G') `n" ^
 "        print('==========================================') `n" ^
 "        print('1. СОЗДАТЬ FORGE (Имя-Версия)\n2. ВАНИЛЛА (Версия)\n3. ИГРАТЬ\n4. ПАПКА МОДОВ\n5. НАСТРОЙКИ\n6. ВЫХОД') `n" ^
 "        m = input('Выбор > ') `n" ^
@@ -104,8 +109,8 @@ powershell -Command ^
 "            except: pass `n" ^
 "        elif m == '5': c['nick'] = input('Ник: '); c['ram'] = input('ОЗУ: '); save_cfg(c) `n" ^
 "        elif m == '6': break `n" ^
-"if __name__ == '__main__': main() `@; $code | Out-File -FilePath launcher_v36.py -Encoding utf8"
+"if __name__ == '__main__': main() `@; $code | Out-File -FilePath launcher_final.py -Encoding utf8"
 
 :: Запуск
-python launcher_v36.py
+python launcher_final.py
 pause

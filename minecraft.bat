@@ -8,7 +8,7 @@ set "PY=launcher_engine.py"
 echo [*] Синхронизация систем...
 if exist %PY% del /f /q %PY%
 
-:: Генерация кода движка
+:: Запись Python файла (строго без пробелов перед командами записи)
 echo # -*- coding: utf-8 -*- > %PY%
 echo import os, sys, subprocess, uuid, json, shutil >> %PY%
 echo try: import minecraft_launcher_lib >> %PY%
@@ -86,5 +86,10 @@ echo         elif m == "5": c["nick"] = input("Ник: "); c["ram"] = input("О�
 echo         elif m == "6": break >> %PY%
 echo if __name__ == "__main__": main() >> %PY%
 
-python %PY%
+:: Проверка создан ли файл перед запуском
+if exist %PY% (
+    python %PY%
+) else (
+    echo [!] ОШИБКА: Файл движка не был создан!
+)
 pause

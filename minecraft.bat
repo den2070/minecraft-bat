@@ -24,12 +24,12 @@ if %errorlevel% neq 0 (
 )
 
 :: --- СОЗДАНИЕ PYTHON ФАЙЛА (БЕЗОПАСНЫЙ МЕТОД) ---
-echo [*] Запуск систем...
+echo [*] Синхронизация систем...
 
-:: Очищаем старый файл если был
+:: Очищаем старые файлы
 if exist launcher_engine.py del /f /q launcher_engine.py
 
-:: Записываем код построчно через временный файл, чтобы не было ошибок кавычек
+:: Записываем код построчно через блок ( ... )
 (
 echo # -*- coding: utf-8 -*-
 echo import os, sys, subprocess, uuid, json, shutil
